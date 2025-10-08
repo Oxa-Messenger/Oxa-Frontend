@@ -79,3 +79,6 @@ yarn-error.*
 *.tsbuildinfo
 
 # @end expo-cli
+
+# Endpoints
+constants/Enpoints.ts

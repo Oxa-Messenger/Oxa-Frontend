@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useUserData } from "@/hooks/UserDataContext";
 import axios from "axios";
 import { Stack, useRouter } from "expo-router";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
 	ActivityIndicator,
 	FlatList,
@@ -31,7 +31,7 @@ export default function HomeScreen() {
 	const [contacts, setContacts] = useState<Contacts>([]);
 
 	useEffect(() => {
-		if (token === undefined) return;
+		if (token === null) return;
 
 		const fetchUserData = async () => {
 			try {
