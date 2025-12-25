@@ -3,6 +3,9 @@ export const BASE_URL = "https://Chipher.com";
 export const API_ENDPOINTS = {
 	USER_HOME: "/user/home",
 	USER_PROFILE: "/user/profile",
+	ADD_CONTACT: "/user/contacts/add",
+	UPDATE_CONTACT_ALIAS: "/user/contacts/update-alias",
+	DELETE_CONTACT: "/user/contacts/delete",
 	LOGIN: "/user/auth/login",
 	LOGOUT: "/user/auth/logout",
 	REGISTER: "/user/auth/signup",

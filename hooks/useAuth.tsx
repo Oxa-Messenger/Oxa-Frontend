@@ -52,11 +52,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 		loadUser();
 	}, []);
 
-	const login = async (email: string, password: string) => {
+	const login = async (identifier: string, password: string) => {
 		try {
 			const res = await axios.post(
 				`${BASE_URL}${API_ENDPOINTS.LOGIN}`,
-				{ email, password },
+				{ identifier, password },
 				{
 					headers: {
 						"Content-Type": "application/json",
@@ -88,13 +88,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 					},
 				}
 			);
-			if (res?.data?.success) {
-				await removeToken();
-				setToken(null);
-				return true;
-			} else {
-				return false;
-			}
+			await removeToken();
+			setToken(null);
+			return true;
 		} catch (error) {
 			console.error("Logout error:", error);
 			try {
