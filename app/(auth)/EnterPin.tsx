@@ -56,7 +56,7 @@ export default function EnterPinScreen() {
 		try {
 			const res = await axios.post(
 				`${BASE_URL}${API_ENDPOINTS.RESET_PASSWORD}`,
-				{ email, pin, password },
+				{ token: pin, password },
 				{
 					headers: { "Content-Type": "application/json" },
 				}

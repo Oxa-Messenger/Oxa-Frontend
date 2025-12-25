@@ -20,7 +20,7 @@ export default function Login() {
 	const { login } = useAuth();
 
 	type LoginFormData = {
-		email: string;
+		identifier: string;
 		password: string;
 	};
 
@@ -48,7 +48,7 @@ export default function Login() {
 	const onSubmit = async (data: LoginFormData) => {
 		setLoading(true);
 		try {
-			const result = await login(data.email, data.password);
+			const result = await login(data.identifier, data.password);
 			if (result) {
 				router.replace("/(MainApp)/Home");
 			} else {
@@ -60,12 +60,10 @@ export default function Login() {
 				});
 			}
 		} catch (error) {
-			console.error("Login error:", error);
 			Toast.show({
 				type: "error",
 				text1: "Server Error",
 				text2: "Something went wrong!",
-				position: "top",
 			});
 		} finally {
 			setLoading(false);
@@ -78,12 +76,12 @@ export default function Login() {
 
 			<Controller
 				control={control}
-				name="email"
-				rules={{ required: "Email is required" }}
+				name="identifier"
+				rules={{ required: "Email or username is required" }}
 				render={({ field: { onChange, value } }) => (
 					<TextInput
 						style={styles.input}
-						placeholder="Email"
+						placeholder="Email or Username"
 						placeholderTextColor={Colors.text}
 						value={value}
 						onChangeText={onChange}
@@ -91,8 +89,8 @@ export default function Login() {
 					/>
 				)}
 			/>
-			{errors.email && (
-				<Text style={styles.error}>{errors.email.message}</Text>
+			{errors.identifier && (
+				<Text style={styles.error}>{errors.identifier.message}</Text>
 			)}
 
 			<Controller

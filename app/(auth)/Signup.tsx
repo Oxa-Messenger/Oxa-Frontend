@@ -48,30 +48,55 @@ export default function Signup() {
 	const onSubmit = async (data: SignupFormData) => {
 		setIsLoading(true);
 		try {
-			const res = await axios.post(`${BASE_URL}${API_ENDPOINTS.REGISTER}`, data, {
+			await axios.post(`${BASE_URL}${API_ENDPOINTS.REGISTER}`, data, {
 				headers: {
 					"Content-Type": "application/json",
 					"x-api-key": "reqres-free-v1",
 				},
 			});
-
-			if (res.data.success) {
-				router.replace("/(MainApp)/Home");
-			} else {
-				Toast.show({
-					type: "error",
-					text1: "Signup Failed",
-					text2: res.data.message,
-					position: "top",
-				});
-			}
-		} catch (error) {
+			router.replace("/(auth)/Login");
 			Toast.show({
-				type: "error",
-				text1: "Server Error",
-				text2: "Something went wrong! Please try again.",
+				type: "success",
+				text1: "Signup Successful",
+				text2: "Log in with your credentials",
 				position: "top",
 			});
+		} catch (error) {
+			console.error("Signup error details:", error);
+
+			if (axios.isAxiosError(error)) {
+				const status = error.response?.status;
+
+				if (status === 409) {
+					Toast.show({
+						type: "error",
+						text1: "Signup Failed",
+						text2: "Username or email already exists",
+						position: "top",
+					});
+				} else if (status === 400) {
+					Toast.show({
+						type: "error",
+						text1: "Signup Failed",
+						text2: "Incorrect username or email format",
+						position: "top",
+					});
+				} else {
+					Toast.show({
+						type: "error",
+						text1: "Signup Failed",
+						text2: "Please try again later",
+						position: "top",
+					});
+				}
+			} else {
+				// Handle non-Axios errors (like a local JS crash)
+				Toast.show({
+					type: "error",
+					text1: "Error",
+					text2: "An unexpected error occurred",
+				});
+			}
 		} finally {
 			setIsLoading(false);
 		}
@@ -85,7 +110,13 @@ export default function Signup() {
 				<Controller
 					control={control}
 					name="email"
-					rules={{ required: "Email is required" }}
+					rules={{
+						required: "Email is required",
+						pattern: {
+							value: /^\S+@\S+\.\S+$/,
+							message: "Invalid email",
+						},
+					}}
 					render={({ field: { onChange, value } }) => (
 						<TextInput
 							style={styles.input}
@@ -104,7 +135,7 @@ export default function Signup() {
 				<Controller
 					control={control}
 					name="password"
-					rules={{ required: "Password is required", minLength: 6 }}
+					rules={{ required: "Password is required", minLength: 8 }}
 					render={({ field: { onChange, value } }) => (
 						<TextInput
 							style={styles.input}
@@ -124,6 +155,12 @@ export default function Signup() {
 				<Controller
 					control={control}
 					name="username"
+					rules={{
+						pattern: {
+							value: /^[a-zA-Z0-9_]+$/,
+							message: "Only letters & numbers",
+						},
+					}}
 					render={({ field: { onChange, value } }) => (
 						<TextInput
 							style={styles.input}
