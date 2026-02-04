@@ -1,6 +1,5 @@
 // props: userId, roomId
 // This manages MANY peers: Map<peerId, PeerEntry>
-import { ICE_SERVERS } from "@/constants/Endpoints";
 import { useSocket } from "@/hooks/SocketContext";
 import { createPeer, PeerEntry } from "@/utils/webrtc";
 import { useEffect, useRef, useState } from "react";
@@ -14,7 +13,7 @@ export default function ChatGroupMesh({
 	userId: string;
 	roomId: string;
 }) {
-	const { socket } = useSocket();
+	const { socket, iceServers: ICE_SERVERS } = useSocket();
 	const socketRef = useRef<Socket | null>(socket);
 	const peers = useRef<Map<string, PeerEntry>>(new Map());
 	const [logs, setLogs] = useState<string[]>([]);
@@ -23,7 +22,7 @@ export default function ChatGroupMesh({
 
 	const getOrCreatePeer = (peerId: string, initiator: boolean) => {
 		if (peers.current.has(peerId)) return peers.current.get(peerId)!;
-		const entry = createPeer(ICE_SERVERS);
+		const entry = createPeer(ICE_SERVERS as any);
 		entry.pc.onicecandidate = (e: any) => {
 			if (e.candidate)
 				socketRef.current?.emit("webrtc-ice", {

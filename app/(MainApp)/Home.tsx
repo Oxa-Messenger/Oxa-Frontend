@@ -43,7 +43,7 @@ export default function HomeScreen() {
 	const [loading, setLoading] = useState(false);
 	const { userData, setUserData } = useUserData();
 	const [contacts, setContacts] = useState<Contacts | []>([]);
-	const { initSocket, onlineUsers } = useSocket();
+	const { initSocket, onlineUsers, iceServers, setIceServers } = useSocket();
 
 	const [selectedContact, setSelectedContact] = useState<Contact | null>(
 		null
@@ -55,16 +55,17 @@ export default function HomeScreen() {
 	const [aliasModalVisible, setAliasModalVisible] = useState(false);
 	const [aliasInput, setAliasInput] = useState("");
 	const [searchQuery, setSearchQuery] = useState("");
-	const [isFocused, setIsFocused] = useState(false);
 
 	useEffect(() => {
 		if (token === null) return;
+		setLoading(true);
 		fetchUserData();
+		fetchIceConfig();
+		setLoading(false);
 	}, [token]);
 
 	const fetchUserData = async () => {
 		try {
-			setLoading(true);
 			const res = await axios.get(
 				`${BASE_URL}${API_ENDPOINTS.USER_HOME}`,
 				{
@@ -77,8 +78,22 @@ export default function HomeScreen() {
 			}
 		} catch (error) {
 			Toast.show({ type: "error", text1: "Failed to fetch data" });
-		} finally {
-			setLoading(false);
+		}
+	};
+
+	const fetchIceConfig = async () => {
+		try {
+			if (!iceServers) {
+				const res = await axios.get(
+					`${BASE_URL}${API_ENDPOINTS.ICE_SERVERS}`,
+					{
+						headers: { Authorization: `Bearer ${token}` },
+					}
+				);
+				setIceServers(res.data);
+			}
+		} catch (error) {
+			console.error("Failed to fetch ICE servers", error);
 		}
 	};
 
