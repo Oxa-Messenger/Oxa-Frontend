@@ -28,10 +28,14 @@
 				"android.permission.MODIFY_AUDIO_SETTINGS",
 				"android.permission.INTERNET",
 				"android.permission.ACCESS_NETWORK_STATE",
-				"android.permission.WAKE_LOCK"
+				"android.permission.WAKE_LOCK",
+				"android.permission.FOREGROUND_SERVICE",
+				"android.permission.FOREGROUND_SERVICE_MICROPHONE",
+				"android.permission.FOREGROUND_SERVICE_CAMERA"
 			]
 		},
 		"plugins": [
+			"./withAndroidSplits",
 			"expo-router",
 			[
 				"expo-splash-screen",
@@ -44,6 +48,18 @@
 			],
 			"expo-secure-store",
 			"expo-font",
+			[
+				"expo-build-properties",
+				{
+					"android": {
+						"minSdkVersion": 29,
+						"compileSdkVersion": 35,
+						"targetSdkVersion": 35,
+						"enableProguardInReleaseBuilds": true,
+						"enableShrinkResourcesInReleaseBuilds": true
+					}
+				}
+			],
 			[
 				"expo-camera",
 				{

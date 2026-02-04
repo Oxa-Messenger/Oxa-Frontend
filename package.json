@@ -10,7 +10,9 @@
 		"lint": "expo lint",
 		"apk:release": "powershell -ExecutionPolicy Bypass -File ./scripts/build-release.ps1",
 		"apk:release-fast": "powershell -ExecutionPolicy Bypass -File ./scripts/build-release-fast.ps1",
-		"apk:release-main": "cd android && gradlew.bat clean assembleRelease && cd .. && adb install -r android/app/build/outputs/apk/release/app-release.apk"
+		"apk:release-main": "cd android && gradlew.bat clean assembleRelease && cd .. && adb install -r android/app/build/outputs/apk/release/app-release.apk",
+		"install-debug-apk": "adb install -r ./android/app/build/outputs/apk/debug/app-debug.apk",
+		"install-release-apk": "adb install -r ./android/app/build/outputs/apk/release/app-release.apk"
 	},
 	"dependencies": {
 		"@types/react": "~19.1.10",
@@ -18,6 +20,7 @@
 		"babel-plugin-module-resolver": "^5.0.2",
 		"expo": "^54.0.30",
 		"expo-av": "^16.0.8",
+		"expo-build-properties": "~1.0.10",
 		"expo-camera": "^17.0.10",
 		"expo-font": "^14.0.10",
 		"expo-router": "^6.0.21",
@@ -25,15 +28,16 @@
 		"expo-secure-store": "^15.0.8",
 		"expo-splash-screen": "^31.0.13",
 		"react": "19.1.0",
+		"react-dom": "19.1.0",
 		"react-hook-form": "^7.69.0",
+		"react-native": "0.81.5",
 		"react-native-toast-message": "^2.3.3",
 		"react-native-webrtc": "^124.0.7",
-		"socket.io-client": "^4.8.3",
-		"react-native": "0.81.5"
+		"socket.io-client": "^4.8.3"
 	},
 	"private": true,
 	"devDependencies": {
-		"typescript": "~5.9.2",
-		"@react-native-community/cli": "latest"
+		"@react-native-community/cli": "latest",
+		"typescript": "~5.9.2"
 	}
 }
