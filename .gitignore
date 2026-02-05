@@ -30,6 +30,7 @@ yarn-error.*
 
 # local env files
 .env*.local
+.env
 
 # typescript
 *.tsbuildinfo
@@ -37,17 +38,10 @@ yarn-error.*
 # @end expo-cli
 
 # Endpoints
-**/Endpoints.ts
 !**/Endpoints_example.ts
 
 # Android specifics (Bare Workflow)
-android/app/build/
-android/.gradle/
-android/local.properties
-android/generated
-android/app/src/main/assets/index.android.bundle
-*.apk
-*.aab
+android/
 
 # iOS build artifacts (for when you eventually work on Mac)
 ios/build/
