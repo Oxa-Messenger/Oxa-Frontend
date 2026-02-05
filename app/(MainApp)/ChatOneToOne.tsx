@@ -46,7 +46,6 @@ export default function ChatScreen() {
 	const isPeerOnline = onlineUsers.has(String(otherUserId));
 	const isAttached = useRef(false);
 
-	// ... (Keep your existing useEffect, handleStartCall, etc. logic) ...
 	useEffect(() => {
 		if (!socket || !userId || !otherUserId || isAttached.current) return;
 		let detachFn: (() => void) | undefined;
@@ -215,7 +214,7 @@ export default function ChatScreen() {
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
-		backgroundColor: "#000", // Dark theme background
+		backgroundColor: "#000",
 	},
 	headerInfo: {
 		flexDirection: "row",
@@ -261,7 +260,7 @@ const styles = StyleSheet.create({
 		borderRadius: 20,
 	},
 	meBubble: {
-		backgroundColor: "#007AFF", // Classic iOS blue
+		backgroundColor: "#007AFF",
 		borderBottomRightRadius: 4,
 	},
 	themBubble: {
