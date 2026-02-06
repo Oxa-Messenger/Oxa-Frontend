@@ -13,6 +13,8 @@ type SocketContextType = {
 	disconnectSocket: () => void;
 	isCallActive?: boolean;
 	setIsCallActive: (active: boolean) => void;
+	iceServers: any[] | null;
+	setIceServers: (servers: any[] | null) => void;
 };
 
 const SocketContext = createContext<SocketContextType>({
@@ -22,6 +24,8 @@ const SocketContext = createContext<SocketContextType>({
 	initSocket: () => {},
 	disconnectSocket: () => {},
 	setIsCallActive: () => {},
+	iceServers: [],
+	setIceServers: () => {},
 });
 
 export const useSocket = () => useContext(SocketContext);
@@ -33,6 +37,7 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
 	const [isConnected, setIsConnected] = useState(false);
 	const [onlineUsers, setOnlineUsers] = useState<Set<string>>(new Set());
 	const socketRef = useRef<Socket | null>(null);
+	const [iceServers, setIceServers] = useState<any[] | null>([]);
 
 	const initSocket = ({
 		userId,
@@ -111,6 +116,7 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
 				await logout();
 				router.replace("/(auth)/Login");
 			} catch (error) {
+				console.error("Error handling session termination:", error);
 				router.replace("/(auth)/Login");
 			}
 		});
@@ -137,6 +143,8 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
 				disconnectSocket,
 				isCallActive,
 				setIsCallActive,
+				iceServers,
+				setIceServers,
 			}}
 		>
 			{children}

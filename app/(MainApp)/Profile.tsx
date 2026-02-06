@@ -71,9 +71,11 @@ export default function ProfileScreen() {
 	const handleLogout = async () => {
 		try {
 			disconnectSocket();
-			await logout();
+			logout();
 			router.replace("/(auth)/Login");
 		} catch (error) {
+			console.error("Logout error:", error);
+			router.replace("/(auth)/Login");
 			Toast.show({
 				type: "error",
 				text1: "Logout failed",

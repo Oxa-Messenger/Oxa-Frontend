@@ -1,4 +1,3 @@
-import { ICE_SERVERS } from "@/constants/Endpoints";
 import { useSocket } from "@/hooks/SocketContext";
 import { useUserData } from "@/hooks/UserDataContext";
 import useWebRTC from "@/hooks/useWebRTC";
@@ -31,7 +30,7 @@ export default function ChatScreen() {
 	const alias = contact?.alias || otherUserId;
 
 	const [message, setMessage] = useState("");
-	const { socket, initSocket, onlineUsers } = useSocket();
+	const { socket, initSocket, onlineUsers, iceServers } = useSocket();
 	const socketRef = useRef<Socket | null>(null);
 	const {
 		attachSocket,
@@ -42,12 +41,11 @@ export default function ChatScreen() {
 		dcOpen,
 		closePeerConnection,
 		roomRef,
-	} = useWebRTC(ICE_SERVERS);
+	} = useWebRTC(iceServers);
 
 	const isPeerOnline = onlineUsers.has(String(otherUserId));
 	const isAttached = useRef(false);
 
-	// ... (Keep your existing useEffect, handleStartCall, etc. logic) ...
 	useEffect(() => {
 		if (!socket || !userId || !otherUserId || isAttached.current) return;
 		let detachFn: (() => void) | undefined;
@@ -216,7 +214,7 @@ export default function ChatScreen() {
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
-		backgroundColor: "#000", // Dark theme background
+		backgroundColor: "#000",
 	},
 	headerInfo: {
 		flexDirection: "row",
@@ -262,7 +260,7 @@ const styles = StyleSheet.create({
 		borderRadius: 20,
 	},
 	meBubble: {
-		backgroundColor: "#007AFF", // Classic iOS blue
+		backgroundColor: "#007AFF",
 		borderBottomRightRadius: 4,
 	},
 	themBubble: {

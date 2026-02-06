@@ -43,7 +43,7 @@ export default function HomeScreen() {
 	const [loading, setLoading] = useState(false);
 	const { userData, setUserData } = useUserData();
 	const [contacts, setContacts] = useState<Contacts | []>([]);
-	const { initSocket, onlineUsers } = useSocket();
+	const { initSocket, onlineUsers, iceServers, setIceServers } = useSocket();
 
 	const [selectedContact, setSelectedContact] = useState<Contact | null>(
 		null
@@ -55,30 +55,57 @@ export default function HomeScreen() {
 	const [aliasModalVisible, setAliasModalVisible] = useState(false);
 	const [aliasInput, setAliasInput] = useState("");
 	const [searchQuery, setSearchQuery] = useState("");
-	const [isFocused, setIsFocused] = useState(false);
 
 	useEffect(() => {
 		if (token === null) return;
+		setLoading(true);
 		fetchUserData();
+		fetchIceConfig();
+		setLoading(false);
 	}, [token]);
 
 	const fetchUserData = async () => {
 		try {
-			setLoading(true);
 			const res = await axios.get(
 				`${BASE_URL}${API_ENDPOINTS.USER_HOME}`,
 				{
 					headers: { Authorization: `Bearer ${token}` },
 				}
 			);
-			if (res.data.success) {
-				setUserData(res.data.message);
-				setContacts(res.data.message.contacts || []);
+			setUserData(res.data.message);
+			setContacts(res.data.message.contacts || []);
+		} catch (error: any) {
+			if (error?.response?.status === 404) {
+				console.error("User not found:", error);
+				return Toast.show({
+					type: error,
+					text1: "User not found",
+					text2: "Please log in again",
+					position: "top",
+				});
 			}
+			console.error("Failed to fetch user data:", error);
+			Toast.show({ type: "error", text1: "Failed to fetch user data" });
+		}
+	};
+
+	const fetchIceConfig = async () => {
+		try {
+			const res = await axios.get(
+				`${BASE_URL}${API_ENDPOINTS.ICE_SERVERS}`,
+				{
+					headers: { Authorization: `Bearer ${token}` },
+				}
+			);
+			setIceServers(res.data);
 		} catch (error) {
-			Toast.show({ type: "error", text1: "Failed to fetch data" });
-		} finally {
-			setLoading(false);
+			console.error("Failed to fetch ICE servers", error);
+			return Toast.show({
+				type: "error",
+				text1: "Failed to fetch communication servers",
+				text2: "Kindly restart the app or login again",
+				position: "top",
+			});
 		}
 	};
 
@@ -164,26 +191,64 @@ export default function HomeScreen() {
 				}
 			);
 
-			if (res.data.success) {
-				const newContact = res.data.contact;
-				setContacts((prev) => [...prev, newContact]);
-				setUserData((prev) => {
-					if (!prev) return prev;
-					return {
-						...prev,
-						contacts: [...(prev.contacts || []), newContact],
-					};
-				});
-			}
+			const newContact = res.data.contact;
+			setContacts((prev) => [...prev, newContact]);
+			setUserData((prev) => {
+				if (!prev) return prev;
+				return {
+					...prev,
+					contacts: [...(prev.contacts || []), newContact],
+				};
+			});
 
 			setAddModalVisible(false);
 			setContactIdentifier("");
 
-			Toast.show({ type: "success", text1: "Contact added" });
+			Toast.show({
+				type: "success",
+				text1: "Contact added",
+				position: "top",
+			});
 		} catch (err: any) {
+			if (err.response?.status === 400) {
+				console.error(
+					"Invalid identifier provided:",
+					err.response.data
+				);
+				return Toast.show({
+					type: "error",
+					text1: "Invalid identifier",
+					text2: "Please enter a valid username or email",
+					position: "top",
+				});
+			} else if (err.response?.status === 404) {
+				console.error(
+					"User not found with identifier:",
+					identifier,
+					err.response.data
+				);
+				return Toast.show({
+					type: "info",
+					text1: "User not found",
+					position: "top",
+				});
+			} else if (err.response?.status === 409) {
+				console.error(
+					"Contact already exists for identifier:",
+					identifier,
+					err.response.data
+				);
+				return Toast.show({
+					type: "info",
+					text1: "Already a contact",
+					text2: "This user is already in your contacts",
+					position: "top",
+				});
+			}
 			Toast.show({
 				type: "error",
-				text1: err?.response?.data?.message || "Failed to add contact",
+				text1: "Failed to add contact",
+				position: "top",
 			});
 		} finally {
 			setAdding(false);
@@ -200,7 +265,7 @@ export default function HomeScreen() {
 		}
 
 		try {
-			const res = await axios.put(
+			await axios.put(
 				`${BASE_URL}${API_ENDPOINTS.UPDATE_CONTACT_ALIAS}`,
 				{
 					user: selectedContact?.user,
@@ -213,31 +278,50 @@ export default function HomeScreen() {
 				}
 			);
 
-			if (res.data.success) {
-				const updateList = (prev: Contacts) =>
-					prev.map((c) =>
-						c.user === selectedContact.user
-							? { ...c, alias: aliasInput.trim() }
-							: c
-					);
-
-				setContacts((prev) => updateList(prev));
-				setUserData((prev) =>
-					prev
-						? { ...prev, contacts: updateList(prev.contacts || []) }
-						: null
+			const updateList = (prev: Contacts) =>
+				prev.map((c) =>
+					c.user === selectedContact.user
+						? { ...c, alias: aliasInput.trim() }
+						: c
 				);
 
-				setAliasModalVisible(false);
-				setContactMenuVisible(false);
-				setAliasInput("");
-				Toast.show({
-					type: "success",
-					text1: "Alias updated",
+			setContacts((prev) => updateList(prev));
+			setUserData((prev) =>
+				prev
+					? { ...prev, contacts: updateList(prev.contacts || []) }
+					: null
+			);
+
+			setAliasModalVisible(false);
+			setContactMenuVisible(false);
+			setAliasInput("");
+			Toast.show({
+				type: "success",
+				text1: "Alias updated",
+			});
+			setSelectedContact(null);
+		} catch (err: any) {
+			if (err.response?.status === 400) {
+				console.error("Invalid alias provided:", err.response.data);
+				return Toast.show({
+					type: "error",
+					text1: "Invalid alias", // Invalid alias or user ID
+					position: "top",
+				});
+			} else if (err.response?.status === 404) {
+				console.error(
+					"Contact not found for user:",
+					selectedContact?.user,
+					err.response.data
+				);
+				return Toast.show({
+					type: "error",
+					text1: "Contact not found",
+					position: "top",
 				});
 			}
-			setSelectedContact(null);
-		} catch (err) {
+
+			console.error("Failed to update alias:", err);
 			Toast.show({
 				type: "error",
 				text1: "Failed to update alias",
@@ -262,11 +346,35 @@ export default function HomeScreen() {
 				type: "success",
 				text1: "Contact removed",
 			});
-		} catch {
-			Toast.show({
-				type: "error",
-				text1: "Failed to remove contact",
-			});
+		} catch (err: any) {
+			if (err.response?.status === 400) {
+				console.error(
+					"Invalid contact ID provided:",
+					err.response.data
+				);
+				Toast.show({
+					type: "error",
+					text1: "Invalid contact",
+					position: "top",
+				});
+			} else if (err.response?.status === 404) {
+				console.error(
+					"Contact not found for user:",
+					contact.user,
+					err.response.data
+				);
+				Toast.show({
+					type: "error",
+					text1: "Contact not found",
+					position: "top",
+				});
+			} else {
+				console.error("Failed to delete contact:", err);
+				Toast.show({
+					type: "error",
+					text1: "Failed to remove contact",
+				});
+			}
 		}
 	};
 

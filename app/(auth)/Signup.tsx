@@ -2,7 +2,7 @@ import { Colors } from "@/constants/Colors";
 import { API_ENDPOINTS, BASE_URL } from "@/constants/Endpoints";
 import axios from "axios";
 import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import {
 	ActivityIndicator,
@@ -17,6 +17,8 @@ import Toast from "react-native-toast-message";
 export default function Signup() {
 	const router = useRouter();
 	const [isLoading, setIsLoading] = useState(false);
+	const passwordRef = useRef<TextInput>(null);
+	const usernameRef = useRef<TextInput>(null);
 
 	type SignupFormData = {
 		email: string;
@@ -35,6 +37,7 @@ export default function Signup() {
 		try {
 			router.replace(path as any);
 		} catch (error) {
+			console.error("Navigation error:", error);
 			Toast.show({
 				type: "error",
 				text1: "Navigation Error",
@@ -78,14 +81,7 @@ export default function Signup() {
 					Toast.show({
 						type: "error",
 						text1: "Signup Failed",
-						text2: "Incorrect username or email format",
-						position: "top",
-					});
-				} else {
-					Toast.show({
-						type: "error",
-						text1: "Signup Failed",
-						text2: "Please try again later",
+						text2: "Invalid input data",
 						position: "top",
 					});
 				}
@@ -117,13 +113,16 @@ export default function Signup() {
 							message: "Invalid email",
 						},
 					}}
-					render={({ field: { onChange, value } }) => (
+					render={({ field: { onChange, onBlur, value } }) => (
 						<TextInput
 							style={styles.input}
 							placeholder="Email"
-							placeholderTextColor="#999"
+							placeholderTextColor={Colors.placeHolder}
 							value={value}
 							onChangeText={onChange}
+							onBlur={onBlur}
+							returnKeyType="next"
+							onSubmitEditing={() => passwordRef.current?.focus()}
 							autoCapitalize="none"
 						/>
 					)}
@@ -136,14 +135,18 @@ export default function Signup() {
 					control={control}
 					name="password"
 					rules={{ required: "Password is required", minLength: 8 }}
-					render={({ field: { onChange, value } }) => (
+					render={({ field: { onChange, onBlur, value } }) => (
 						<TextInput
+							ref={passwordRef}
 							style={styles.input}
 							placeholder="Password"
-							placeholderTextColor="#999"
+							placeholderTextColor={Colors.placeHolder}
 							secureTextEntry
 							value={value}
 							onChangeText={onChange}
+							onBlur={onBlur}
+							returnKeyType="next"
+							onSubmitEditing={() => usernameRef.current?.focus()}
 							autoCapitalize="none"
 						/>
 					)}
@@ -156,18 +159,26 @@ export default function Signup() {
 					control={control}
 					name="username"
 					rules={{
-						pattern: {
-							value: /^[a-zA-Z0-9_]+$/,
-							message: "Only letters & numbers",
+						validate: (val) => {
+							if (!val || val.length === 0) return true;
+							if (val.length < 5) return "At least 5 characters";
+							if (val.length > 20)
+								return "No more than 20 characters";
+
+							return true;
 						},
 					}}
-					render={({ field: { onChange, value } }) => (
+					render={({ field: { onChange, onBlur, value } }) => (
 						<TextInput
+							ref={usernameRef}
 							style={styles.input}
 							placeholder="Username (optional)"
-							placeholderTextColor="#999"
+							placeholderTextColor={Colors.placeHolder}
 							value={value}
 							onChangeText={onChange}
+							onBlur={onBlur}
+							returnKeyType="done"
+							onSubmitEditing={handleSubmit(onSubmit)}
 							autoCapitalize="none"
 						/>
 					)}
@@ -254,7 +265,7 @@ const styles = StyleSheet.create({
 	},
 
 	error: {
-		color: "#FF6B6B",
+		color: Colors.error,
 		marginBottom: 12,
 		fontSize: 13,
 	},

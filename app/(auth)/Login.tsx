@@ -1,7 +1,7 @@
 import { Colors } from "@/constants/Colors";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import { useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import {
 	ActivityIndicator,
@@ -18,6 +18,7 @@ export default function Login() {
 	const router = useRouter();
 	const [loading, setLoading] = useState(false);
 	const { login } = useAuth();
+	const passwordRef = useRef<TextInput>(null);
 
 	type LoginFormData = {
 		identifier: string;
@@ -35,6 +36,7 @@ export default function Login() {
 		try {
 			router.replace(path as any);
 		} catch (error) {
+			console.error("Navigation error:", error);
 			Toast.show({
 				type: "error",
 				text1: "Navigation Error",
@@ -48,18 +50,22 @@ export default function Login() {
 	const onSubmit = async (data: LoginFormData) => {
 		setLoading(true);
 		try {
-			const result = await login(data.identifier, data.password);
-			if (result) {
-				router.replace("/(MainApp)/Home");
-			} else {
+			await login(data.identifier, data.password);
+			router.replace("/(MainApp)/Home");
+		} catch (err: any) {
+			if (err.response.status === 400) {
+				console.error(
+					"Login failed: Incorrect username/email or password"
+				);
 				Toast.show({
 					type: "error",
 					text1: "Login Failed",
-					text2: "Invalid credentials",
-					position: "top",
+					text2: "Incorrect username/email or password",
 				});
+				return;
 			}
-		} catch (error) {
+
+			console.error("Login error details:", err);
 			Toast.show({
 				type: "error",
 				text1: "Server Error",
@@ -78,13 +84,16 @@ export default function Login() {
 				control={control}
 				name="identifier"
 				rules={{ required: "Email or username is required" }}
-				render={({ field: { onChange, value } }) => (
+				render={({ field: { onChange, onBlur, value } }) => (
 					<TextInput
 						style={styles.input}
 						placeholder="Email or Username"
-						placeholderTextColor={Colors.text}
+						placeholderTextColor={Colors.placeHolder}
 						value={value}
 						onChangeText={onChange}
+						onBlur={onBlur}
+						returnKeyType="next"
+						onSubmitEditing={() => passwordRef.current?.focus()}
 						autoCapitalize="none"
 					/>
 				)}
@@ -99,18 +108,22 @@ export default function Login() {
 				rules={{
 					required: "Password is required",
 					minLength: {
-						value: 6,
-						message: "Password must be at least 6 characters",
+						value: 8,
+						message: "Password must be at least 8 characters",
 					},
 				}}
-				render={({ field: { onChange, value } }) => (
+				render={({ field: { onChange, onBlur, value } }) => (
 					<TextInput
+						ref={passwordRef}
 						style={styles.input}
 						placeholder="Password"
-						placeholderTextColor={Colors.text}
-						secureTextEntry
+						placeholderTextColor={Colors.placeHolder}
 						value={value}
 						onChangeText={onChange}
+						onBlur={onBlur}
+						secureTextEntry
+						returnKeyType="done"
+						onSubmitEditing={handleSubmit(onSubmit)}
 						autoCapitalize="none"
 					/>
 				)}
@@ -208,7 +221,7 @@ const styles = StyleSheet.create({
 		textDecorationLine: "underline",
 	},
 	error: {
-		color: "red",
+		color: Colors.error,
 		fontSize: 13,
 		marginBottom: 8,
 	},
