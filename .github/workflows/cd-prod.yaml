@@ -40,10 +40,10 @@ jobs:
 
       # 2. BUILD BINARIES (New files for new installs)
       - name: 🤖 Build Android (APK)
-        run: eas build --platform android --profile production --non-interactive --wait
+        run: eas build --platform android --profile production --non-interactive --wait --output="./Oxa.apk"
 
       #- name: 🍎 Build iOS (IPA)
-      #  run: eas build --platform ios --profile production --non-interactive --wait
+      #  run: eas build --platform ios --profile production --non-interactive --wait --output="./Oxa.ipa"
 
       # 3. CREATE GITHUB RELEASE
       - name: 📝 Create GitHub Release
@@ -60,7 +60,7 @@ jobs:
           prerelease: false
           generate_release_notes: true
           files: |
-            android/app/build/outputs/apk/release/*.apk
-            #./app-release.ipa
+            ./Oxa.apk
+            #./Oxa.ipa
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
