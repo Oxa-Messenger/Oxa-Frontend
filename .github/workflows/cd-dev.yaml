@@ -1,0 +1,66 @@
+name: Frontend Development CD
+
+on:
+  push:
+    branches:
+      - develop
+
+permissions:
+  contents: write # Required for creating GitHub Releases
+
+jobs:
+  development-ship:
+    name: Update & Build Preview
+    runs-on: ubuntu-latest
+    environment: development
+
+    steps:
+      - name: 🏗 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 📚 Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+
+      - name: 🚀 Setup Expo & EAS
+        uses: expo/expo-github-action@v8
+        with:
+          expo-version: latest
+          eas-version: latest
+          token: ${{ secrets.EXPO_PAT }}
+
+      - name: 📦 Install dependencies
+        run: npm install
+
+      # 1. SHIP OTA UPDATE (Instant update for existing users)
+      - name: ☁️ Publish OTA Update
+        run: eas update --branch development --message "${{ github.event.head_commit.message }}"
+
+      # 2. BUILD BINARIES (New files for new installs)
+      - name: 🤖 Build Android (APK)
+        run: eas build --platform android --profile development --non-interactive --wait
+
+      - name: 🍎 Build iOS (IPA)
+        run: eas build --platform ios --profile development --non-interactive --wait
+
+      # 3. CREATE GITHUB RELEASE
+      - name: 📝 Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ github.run_number }}
+          name: Oxa Release dev-v${{ github.run_number }}
+          body: |
+            ## Latest Changes
+            ${{ github.event.head_commit.message }}
+
+            **Build Number:** ${{ github.run_number }}
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          files: |
+            android/app/build/outputs/apk/release/*.apk
+            ./app-release.ipa
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
