@@ -110,6 +110,7 @@ export default function ForgotPasswordScreen() {
 						returnKeyType="next"
 						onSubmitEditing={handleSubmit(handleSendCode)}
 						autoCapitalize="none"
+						testID="emailInput"
 					/>
 				)}
 			/>
@@ -123,6 +124,7 @@ export default function ForgotPasswordScreen() {
 				<TouchableOpacity
 					onPress={handleSubmit(handleSendCode)}
 					style={styles.button}
+					testID="getResetCodeButton"
 				>
 					<Text style={styles.buttonText}>Get Reset Code</Text>
 				</TouchableOpacity>

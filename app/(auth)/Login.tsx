@@ -95,6 +95,7 @@ export default function Login() {
 						returnKeyType="next"
 						onSubmitEditing={() => passwordRef.current?.focus()}
 						autoCapitalize="none"
+						testID="identifierInput"
 					/>
 				)}
 			/>
@@ -125,6 +126,7 @@ export default function Login() {
 						returnKeyType="done"
 						onSubmitEditing={handleSubmit(onSubmit)}
 						autoCapitalize="none"
+						testID="passwordInput"
 					/>
 				)}
 			/>
@@ -138,6 +140,7 @@ export default function Login() {
 				<TouchableOpacity
 					onPress={handleSubmit(onSubmit)}
 					style={styles.button}
+					testID="loginButton"
 				>
 					<Text style={styles.buttonText}>Login</Text>
 				</TouchableOpacity>

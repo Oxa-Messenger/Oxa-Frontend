@@ -152,6 +152,7 @@ export default function EnterPinScreen() {
 						onBlur={onBlur}
 						returnKeyType="next"
 						onSubmitEditing={() => passwordRef.current?.focus()}
+						testID="resetPinInput"
 					/>
 				)}
 			/>
@@ -175,6 +176,7 @@ export default function EnterPinScreen() {
 						returnKeyType="done"
 						onSubmitEditing={handleSubmit(handleResetPassword)}
 						autoCapitalize="none"
+						testID="passwordInput"
 					/>
 				)}
 			/>
@@ -188,6 +190,7 @@ export default function EnterPinScreen() {
 				<TouchableOpacity
 					style={styles.button}
 					onPress={handleSubmit(handleResetPassword)}
+					testID="resetPasswordSubmitButton"
 				>
 					<Text style={styles.buttonText}>Reset Password</Text>
 				</TouchableOpacity>

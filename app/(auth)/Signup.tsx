@@ -124,6 +124,7 @@ export default function Signup() {
 							returnKeyType="next"
 							onSubmitEditing={() => passwordRef.current?.focus()}
 							autoCapitalize="none"
+							testID="emailInput"
 						/>
 					)}
 				/>
@@ -148,6 +149,7 @@ export default function Signup() {
 							returnKeyType="next"
 							onSubmitEditing={() => usernameRef.current?.focus()}
 							autoCapitalize="none"
+							testID="passwordInput"
 						/>
 					)}
 				/>
@@ -180,6 +182,7 @@ export default function Signup() {
 							returnKeyType="done"
 							onSubmitEditing={handleSubmit(onSubmit)}
 							autoCapitalize="none"
+							testID="usernameInput"
 						/>
 					)}
 				/>
@@ -193,6 +196,7 @@ export default function Signup() {
 					<TouchableOpacity
 						style={styles.button}
 						onPress={handleSubmit(onSubmit)}
+						testID="signupButton"
 					>
 						<Text style={styles.buttonText}>Sign Up</Text>
 					</TouchableOpacity>
