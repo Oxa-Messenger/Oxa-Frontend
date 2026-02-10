@@ -147,6 +147,7 @@ export default function ChatScreen() {
 									)
 								}
 								style={styles.headerBtn}
+								testID="notifyPeerButton"
 							>
 								<Ionicons
 									name="notifications-outline"
@@ -157,6 +158,7 @@ export default function ChatScreen() {
 							<TouchableOpacity
 								//onPress={handleStartCall}
 								style={styles.headerBtn}
+								testID="startCallButton"
 							>
 								<Ionicons
 									name="videocam-outline"
@@ -191,6 +193,10 @@ export default function ChatScreen() {
 							}
 							placeholderTextColor="#999"
 							multiline
+							testID="messageInput"
+							returnKeyType="send"
+							onSubmitEditing={handleSendMessage}
+							autoFocus
 						/>
 						<TouchableOpacity
 							onPress={handleSendMessage}
@@ -201,6 +207,7 @@ export default function ChatScreen() {
 									opacity: 0.5,
 								},
 							]}
+							testID="sendMessageButton"
 						>
 							<Ionicons name="send" size={20} color="#fff" />
 						</TouchableOpacity>

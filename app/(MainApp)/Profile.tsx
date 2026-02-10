@@ -3,7 +3,6 @@ import { useSocket } from "@/hooks/SocketContext";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserData } from "@/hooks/UserDataContext";
 import { Ionicons } from "@expo/vector-icons";
-import { router } from "expo-router";
 import React, { useState } from "react";
 import {
 	Platform,
@@ -71,11 +70,9 @@ export default function ProfileScreen() {
 	const handleLogout = async () => {
 		try {
 			disconnectSocket();
-			logout();
-			router.replace("/(auth)/Login");
+			await logout();
 		} catch (error) {
 			console.error("Logout error:", error);
-			router.replace("/(auth)/Login");
 			Toast.show({
 				type: "error",
 				text1: "Logout failed",
@@ -154,6 +151,7 @@ export default function ProfileScreen() {
 							text1: "Coming Soon: Managed Contacts list",
 						})
 					}
+					testID="individualPermissionsButton"
 				>
 					<View style={styles.actionLeft}>
 						<Ionicons
@@ -172,6 +170,7 @@ export default function ProfileScreen() {
 				<TouchableOpacity
 					style={[styles.actionButton, styles.logoutButton]}
 					onPress={handleLogout}
+					testID="logoutButton"
 				>
 					<View style={styles.actionLeft}>
 						<Ionicons

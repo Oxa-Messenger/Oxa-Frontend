@@ -74,6 +74,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
 	const logout = async () => {
 		try {
+			await removeToken();
 			const res = await axios.post(
 				`${BASE_URL}${API_ENDPOINTS.LOGOUT}`,
 				{},
@@ -84,16 +85,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 					},
 				}
 			);
-			await removeToken();
 			setToken(null);
 		} catch (error) {
-			console.error("Logout error:", error);
-			try {
-				await removeToken();
-				setToken(null);
-			} catch {
-				throw error;
-			}
+			setToken(null);
 			throw error;
 		}
 	};

@@ -38,7 +38,7 @@ function MenuItem({ label, icon, onPress, color = Colors.text }: any) {
 }
 
 export default function HomeScreen() {
-	const { token } = useAuth();
+	const { token, logout } = useAuth();
 	const router = useRouter();
 	const [loading, setLoading] = useState(false);
 	const { userData, setUserData } = useUserData();
@@ -75,8 +75,20 @@ export default function HomeScreen() {
 			setUserData(res.data.message);
 			setContacts(res.data.message.contacts || []);
 		} catch (error: any) {
+			if (error?.response?.status === 401) {
+				console.error("Unauthorized access - invalid token:", error);
+				await logout();
+				console.log("Token invalid or expired, logging out user.");
+				return Toast.show({
+					type: "error",
+					text1: "Session Expired",
+					text2: "Please log in again",
+					position: "top",
+				});
+			}
 			if (error?.response?.status === 404) {
 				console.error("User not found:", error);
+				await logout();
 				return Toast.show({
 					type: error,
 					text1: "User not found",
@@ -84,6 +96,7 @@ export default function HomeScreen() {
 					position: "top",
 				});
 			}
+			await logout();
 			console.error("Failed to fetch user data:", error);
 			Toast.show({ type: "error", text1: "Failed to fetch user data" });
 		}
@@ -150,6 +163,7 @@ export default function HomeScreen() {
 					setContactMenuVisible(true);
 				}}
 				style={styles.contactCard}
+				testID="contactCard"
 			>
 				<View style={styles.avatar}>
 					<Text style={styles.avatarText}>{initial}</Text>
@@ -391,6 +405,7 @@ export default function HomeScreen() {
 						<TouchableOpacity
 							onPress={() => router.push("/(MainApp)/Profile")}
 							style={styles.headerIcon}
+							testID="profileButton"
 						>
 							<Ionicons
 								name="person-circle-outline"
@@ -434,6 +449,7 @@ export default function HomeScreen() {
 								onChangeText={setSearchQuery}
 								style={styles.searchInput}
 								autoCapitalize="none"
+								testID="searchInput"
 							/>
 							{searchQuery.length > 0 && (
 								<TouchableOpacity
@@ -441,6 +457,7 @@ export default function HomeScreen() {
 										setSearchQuery("");
 									}}
 									accessibilityLabel="Empty search"
+									testID="clearSearchButton"
 								>
 									<Ionicons
 										name="close-circle"
@@ -466,10 +483,11 @@ export default function HomeScreen() {
 				/>
 			)}
 
-			{/* Floating Action Button */}
+			{/* Floating Action Button Add Contact Button */}
 			<TouchableOpacity
 				style={styles.fab}
 				onPress={() => setAddModalVisible(true)}
+				testID="addContactButton"
 			>
 				<Ionicons name="add" size={30} color="#fff" />
 			</TouchableOpacity>
@@ -486,11 +504,17 @@ export default function HomeScreen() {
 							onChangeText={setContactIdentifier}
 							style={styles.input}
 							autoCapitalize="none"
+							testID="addContactIdentifierInput"
+							onSubmitEditing={() =>
+								handleAddContact(contactIdentifier)
+							}
+							returnKeyType="done"
 						/>
 						<View style={styles.modalActions}>
 							<TouchableOpacity
 								onPress={() => setAddModalVisible(false)}
 								style={styles.modalButton}
+								testID="cancelAddContactButton"
 							>
 								<Text style={{ color: "#888" }}>Cancel</Text>
 							</TouchableOpacity>
@@ -499,6 +523,7 @@ export default function HomeScreen() {
 									handleAddContact(contactIdentifier);
 								}}
 								style={[styles.modalButton, styles.confirmBtn]}
+								testID="confirmAddContactButton"
 							>
 								<Text style={styles.confirmBtnText}>
 									Add Contact
@@ -528,6 +553,7 @@ export default function HomeScreen() {
 								setContactMenuVisible(false);
 								setAliasModalVisible(true);
 							}}
+							testID="editAliasButton"
 						/>
 						<MenuItem
 							label="Delete Contact"
@@ -537,6 +563,7 @@ export default function HomeScreen() {
 								setContactMenuVisible(false);
 								handleDeleteContact(selectedContact);
 							}}
+							testID="deleteContactButton"
 						/>
 					</View>
 				</Pressable>
@@ -558,12 +585,16 @@ export default function HomeScreen() {
 							onChangeText={setAliasInput}
 							style={styles.input}
 							autoCapitalize="none"
+							testID="updateAliasInput"
+							onSubmitEditing={() => handleUpdateAlias()}
+							returnKeyType="done"
 						/>
 
 						<View style={styles.modalActions}>
 							<Pressable
 								style={[styles.modalButton, styles.cancel]}
 								onPress={() => setAliasModalVisible(false)}
+								testID="cancelUpdateAliasButton"
 							>
 								<Text style={styles.modalButtonText}>
 									Cancel
@@ -573,6 +604,7 @@ export default function HomeScreen() {
 							<Pressable
 								style={[styles.modalButton, styles.confirm]}
 								onPress={() => handleUpdateAlias()}
+								testID="confirmUpdateAliasButton"
 							>
 								<Text style={styles.modalButtonText}>Save</Text>
 							</Pressable>
