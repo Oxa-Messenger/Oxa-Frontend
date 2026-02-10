@@ -1,9 +1,14 @@
+import { BASE_URL } from "@/constants/Endpoints";
 import { useAuth } from "@/hooks/useAuth";
-import { router } from "expo-router";
-import React, { createContext, useContext, useRef, useState } from "react";
+import React, {
+	createContext,
+	useContext,
+	useEffect,
+	useRef,
+	useState,
+} from "react";
 import Toast from "react-native-toast-message";
 import io, { Socket } from "socket.io-client";
-import { BASE_URL } from "../constants/Endpoints"; // adjust if your endpoints path differs
 
 type SocketContextType = {
 	socket: Socket | null;
@@ -114,24 +119,37 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
 
 				disconnectSocket();
 				await logout();
-				router.replace("/(auth)/Login");
 			} catch (error) {
 				console.error("Error handling session termination:", error);
-				router.replace("/(auth)/Login");
 			}
 		});
 	};
 
 	const disconnectSocket = () => {
-		try {
-			socketRef.current?.disconnect();
-		} catch (e) {
-			/* ignore */
+		console.log("Cleaning up socket...");
+		if (socketRef.current) {
+			try {
+				// Remove all active listeners to prevent "ghost" triggers
+				socketRef.current.removeAllListeners();
+				socketRef.current.disconnect();
+			} catch (e) {
+				console.error("Error during socket disconnect:", e);
+			}
 		}
+
+		// Reset all states
 		socketRef.current = null;
 		setSocket(null);
 		setIsConnected(false);
+		setOnlineUsers(new Set()); // Clear the list so UI updates immediately
 	};
+
+	// Cleanup Effect for when the app/provider unmounts
+	useEffect(() => {
+		return () => {
+			disconnectSocket();
+		};
+	}, []);
 
 	return (
 		<SocketContext.Provider
