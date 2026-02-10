@@ -38,14 +38,33 @@ jobs:
       - name: ☁️ Publish OTA Update
         run: eas update --branch production --message "${{ github.event.head_commit.message }}"
 
-      # 2. BUILD BINARIES (New files for new installs)
+      # 2. BUILD ANDROID (Wait and Download)
       - name: 🤖 Build Android (APK)
-        run: eas build --platform android --profile production --non-interactive --wait --output="./Oxa.apk"
+        id: android_build
+        run: |
+          # Run build and save metadata to JSON
+          npx eas build --platform android --profile production --non-interactive --json > android-build.json
 
+          # Extract the direct download link
+          APK_URL=$(jq -r '.[0].artifacts.applicationArchiveUrl' android-build.json)
+
+          # Download the file to the runner
+          curl -L "$APK_URL" -o Oxa.apk
+
+      # 3. BUILD IOS (Wait and Download)
       #- name: 🍎 Build iOS (IPA)
-      #  run: eas build --platform ios --profile production --non-interactive --wait --output="./Oxa.ipa"
+      #  id: ios_build
+      #  run: |
+      #    # Run build and save metadata to JSON
+      #    npx eas build --platform ios --profile production --non-interactive --json > ios-build.json
 
-      # 3. CREATE GITHUB RELEASE
+      #    # Extract the direct download link
+      #    IPA_URL=$(jq -r '.[0].artifacts.applicationArchiveUrl' ios-build.json)
+
+      #    # Download the file to the runner
+      #    curl -L "$IPA_URL" -o Oxa.ipa
+
+      # 4. CREATE GITHUB RELEASE
       - name: 📝 Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
@@ -60,7 +79,7 @@ jobs:
           prerelease: false
           generate_release_notes: true
           files: |
-            ./Oxa.apk
-            #./Oxa.ipa
+            Oxa.apk
+            #Oxa.ipa
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
