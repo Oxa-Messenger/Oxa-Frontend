@@ -43,7 +43,7 @@ jobs:
         id: android_build
         run: |
           # Run build and save metadata to JSON
-          npx eas build --platform android --profile development --non-interactive --json > android-build.json
+          eas build --platform android --profile development --non-interactive --json > android-build.json
 
           # Extract the direct download link
           APK_URL=$(jq -r '.[0].artifacts.applicationArchiveUrl' android-build.json)
@@ -56,7 +56,7 @@ jobs:
       #  id: ios_build
       #  run: |
       #    # Run build and save metadata to JSON
-      #    npx eas build --platform ios --profile development --non-interactive --json > ios-build.json
+      #    eas build --platform ios --profile development --non-interactive --json > ios-build.json
 
       #    # Extract the direct download link
       #    IPA_URL=$(jq -r '.[0].artifacts.applicationArchiveUrl' ios-build.json)
