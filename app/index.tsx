@@ -8,7 +8,7 @@ export default function Index() {
 				flex: 1,
 				justifyContent: "center",
 				alignItems: "center",
-				backgroundColor: "#000",
+				backgroundColor: Colors.background,
 			}}
 		>
 			<ActivityIndicator size="large" color={Colors.tint} />

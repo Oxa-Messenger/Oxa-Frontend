@@ -153,7 +153,11 @@ export default function HomeScreen() {
 					)}
 				</View>
 
-				<Ionicons name="chevron-forward" size={18} color="#555" />
+				<Ionicons
+					name="chevron-forward"
+					size={18}
+					color={Colors.icon}
+				/>
 			</TouchableOpacity>
 		);
 	};
@@ -411,11 +415,11 @@ export default function HomeScreen() {
 							<Ionicons
 								name="search-outline"
 								size={18}
-								color="#888"
+								color={Colors.icon}
 							/>
 							<TextInput
 								placeholder="Enter alias"
-								placeholderTextColor="#888"
+								placeholderTextColor={Colors.lightPlaceHolder}
 								caretHidden={searchQuery === ""}
 								value={searchQuery}
 								onChangeText={setSearchQuery}
@@ -445,7 +449,7 @@ export default function HomeScreen() {
 							<Ionicons
 								name="chatbubbles-outline"
 								size={64}
-								color="#333"
+								color={Colors.darkGrey}
 							/>
 							<Text style={styles.emptyText}>
 								No conversations yet
@@ -461,7 +465,7 @@ export default function HomeScreen() {
 				onPress={() => setAddModalVisible(true)}
 				testID="addContactButton"
 			>
-				<Ionicons name="add" size={30} color="#fff" />
+				<Ionicons name="add" size={30} color={Colors.text} />
 			</TouchableOpacity>
 
 			{/* Add Contact Modal - Cleaned Up */}
@@ -471,7 +475,7 @@ export default function HomeScreen() {
 						<Text style={styles.modalTitle}>New Contact</Text>
 						<TextInput
 							placeholder="Username or Email"
-							placeholderTextColor="#888"
+							placeholderTextColor={Colors.lightPlaceHolder}
 							value={contactIdentifier}
 							onChangeText={setContactIdentifier}
 							style={styles.input}
@@ -488,7 +492,11 @@ export default function HomeScreen() {
 								style={styles.modalButton}
 								testID="cancelAddContactButton"
 							>
-								<Text style={{ color: "#888" }}>Cancel</Text>
+								<Text
+									style={{ color: Colors.lightPlaceHolder }}
+								>
+									Cancel
+								</Text>
 							</TouchableOpacity>
 							<TouchableOpacity
 								onPress={() => {
@@ -530,7 +538,7 @@ export default function HomeScreen() {
 						<MenuItem
 							label="Delete Contact"
 							icon="trash-outline"
-							color="#FF3B30"
+							color={Colors.red}
 							onPress={() => {
 								setContactMenuVisible(false);
 								handleDeleteContact(selectedContact);
@@ -552,7 +560,7 @@ export default function HomeScreen() {
 
 						<TextInput
 							placeholder="Enter alias"
-							placeholderTextColor="#888"
+							placeholderTextColor={Colors.lightPlaceHolder}
 							value={aliasInput}
 							onChangeText={setAliasInput}
 							style={styles.input}

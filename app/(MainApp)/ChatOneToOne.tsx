@@ -1,3 +1,4 @@
+import { Colors } from "@/constants/Colors";
 import { useSocket } from "@/hooks/SocketContext";
 import { useUserData } from "@/hooks/UserDataContext";
 import useWebRTC from "@/hooks/useWebRTC";
@@ -116,8 +117,8 @@ export default function ChatScreen() {
 			<Stack.Screen
 				options={{
 					headerShown: true,
-					headerStyle: { backgroundColor: "#121212" },
-					headerTintColor: "#fff",
+					headerStyle: { backgroundColor: Colors.background },
+					headerTintColor: Colors.icon,
 					headerTitle: () => (
 						<View style={styles.headerInfo}>
 							<Text style={styles.headerAlias} numberOfLines={1}>
@@ -128,8 +129,8 @@ export default function ChatScreen() {
 									styles.statusDot,
 									{
 										backgroundColor: isPeerOnline
-											? "#4CAF50"
-											: "#757575",
+											? Colors.peerOnline
+											: Colors.peerOffline,
 									},
 								]}
 							/>
@@ -152,7 +153,7 @@ export default function ChatScreen() {
 								<Ionicons
 									name="notifications-outline"
 									size={22}
-									color="#fff"
+									color={Colors.icon}
 								/>
 							</TouchableOpacity>
 							<TouchableOpacity
@@ -163,7 +164,7 @@ export default function ChatScreen() {
 								<Ionicons
 									name="videocam-outline"
 									size={24}
-									color="#fff"
+									color={Colors.icon}
 								/>
 							</TouchableOpacity>
 						</View>
@@ -191,7 +192,7 @@ export default function ChatScreen() {
 							placeholder={
 								dcOpen ? "Type a message..." : "Connecting..."
 							}
-							placeholderTextColor="#999"
+							placeholderTextColor={Colors.lightPlaceHolder}
 							multiline
 							testID="messageInput"
 							returnKeyType="send"
@@ -209,7 +210,11 @@ export default function ChatScreen() {
 							]}
 							testID="sendMessageButton"
 						>
-							<Ionicons name="send" size={20} color="#fff" />
+							<Ionicons
+								name="send"
+								size={20}
+								color={Colors.sendBtn}
+							/>
 						</TouchableOpacity>
 					</View>
 				</View>
@@ -221,7 +226,7 @@ export default function ChatScreen() {
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
-		backgroundColor: "#000",
+		backgroundColor: Colors.background,
 	},
 	headerInfo: {
 		flexDirection: "row",
@@ -230,7 +235,7 @@ const styles = StyleSheet.create({
 	headerAlias: {
 		fontSize: 17,
 		fontWeight: "600",
-		color: "#fff",
+		color: Colors.text,
 		marginRight: 6,
 	},
 	statusDot: {
@@ -267,30 +272,30 @@ const styles = StyleSheet.create({
 		borderRadius: 20,
 	},
 	meBubble: {
-		backgroundColor: "#007AFF",
+		backgroundColor: Colors.meBubble,
 		borderBottomRightRadius: 4,
 	},
 	themBubble: {
-		backgroundColor: "#262628",
+		backgroundColor: Colors.themBubble,
 		borderBottomLeftRadius: 4,
 	},
 	messageText: {
 		fontSize: 16,
 	},
 	meText: {
-		color: "#fff",
+		color: Colors.text,
 	},
 	themText: {
-		color: "#fff",
+		color: Colors.text,
 	},
 	inputContainer: {
 		padding: 10,
-		backgroundColor: "#000",
+		backgroundColor: Colors.background,
 	},
 	inputWrapper: {
 		flexDirection: "row",
 		alignItems: "center",
-		backgroundColor: "#1C1C1E",
+		backgroundColor: Colors.inputBackground,
 		borderRadius: 25,
 		paddingHorizontal: 15,
 		paddingVertical: 5,
@@ -298,13 +303,12 @@ const styles = StyleSheet.create({
 	},
 	input: {
 		flex: 1,
-		color: "#fff",
+		color: Colors.text,
 		fontSize: 16,
 		paddingTop: 8,
 		paddingBottom: 8,
 	},
 	sendBtn: {
-		backgroundColor: "#007AFF",
 		width: 34,
 		height: 34,
 		borderRadius: 17,
