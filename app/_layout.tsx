@@ -37,7 +37,7 @@ function RootLayoutNav() {
 
 		// NOTE: If (token && inMainGroup), we do NOTHING.
 		// This allows you to navigate freely between Home, Profile, etc.
-	}, [token, loading, segments]);
+	}, [token, loading, segments, router]);
 
 	return (
 		<Stack screenOptions={{ headerShown: false }}>
@@ -84,7 +84,6 @@ export default function Layout() {
 				<ThemeProvider value={DarkTheme}>
 					<StatusBar translucent={false} barStyle={"light-content"} />
 					<RootLayoutNav />
-					{/*<Stack screenOptions={{ headerShown: false }} />*/}
 					<Toast config={toastConfig} />
 				</ThemeProvider>
 			</AuthProvider>
