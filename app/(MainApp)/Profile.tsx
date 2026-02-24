@@ -73,10 +73,6 @@ export default function ProfileScreen() {
 			await logout();
 		} catch (error) {
 			console.error("Logout error:", error);
-			Toast.show({
-				type: "error",
-				text1: "Logout failed",
-			});
 		}
 	};
 
