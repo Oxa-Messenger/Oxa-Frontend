@@ -9,9 +9,9 @@ import {
 } from "react-native-webrtc";
 import { Socket } from "socket.io-client";
 // Added imports for permissions in Expo
+import { useSocket } from "@/hooks/SocketContext";
 import { Audio } from "expo-av";
 import { Camera } from "expo-camera";
-import { useSocket } from "./SocketContext";
 
 type Maybe<T> = T | null;
 
@@ -196,9 +196,8 @@ export default function useWebRTC(ICE_SERVERS: any) {
 					console.log(mobileModel, "Offer sent via socket");
 				} catch (err) {
 					console.error(mobileModel, "negotiationneeded error", err);
-				} finally {
-					makingOffer.current = false;
 				}
+				makingOffer.current = false;
 			};
 			// ✅ Send ICE candidates via socket
 			(pcRef.current as any).onicecandidate = (event: any) => {
