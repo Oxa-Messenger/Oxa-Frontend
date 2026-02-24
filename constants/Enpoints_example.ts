@@ -11,15 +11,5 @@ export const API_ENDPOINTS = {
 	REGISTER: "/user/auth/signup",
 	FORGOT_PASSWORD: "/user/auth/forgot-password",
 	RESET_PASSWORD: "/user/auth/reset-password",
+	ICE_SERVERS: "/user/sensitive-stuff/ice-servers",
 };
-
-export const ICE_SERVERS = [
-	{
-		urls: "stun:stun.l.google.com:19302",
-	},
-	{
-		urls: "turn:turn.example.com:3478",
-		username: "user",
-		credential: "pass",
-	},
-];

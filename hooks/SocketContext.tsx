@@ -8,7 +8,7 @@ import React, {
 	useState,
 } from "react";
 import Toast from "react-native-toast-message";
-import io, { Socket } from "socket.io-client";
+import { io, Socket } from "socket.io-client";
 
 type SocketContextType = {
 	socket: Socket | null;
@@ -114,7 +114,7 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
 				Toast.show({
 					type: "info",
 					text1: "Session Terminated",
-					text2: "Logged in from another device.",
+					text2: "Someone logged in from another device.",
 				});
 
 				disconnectSocket();

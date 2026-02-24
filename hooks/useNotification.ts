@@ -1,8 +1,8 @@
+import { useSocket } from "@/hooks/SocketContext";
+import { useUserData } from "@/hooks/UserDataContext";
 import { router, useGlobalSearchParams } from "expo-router";
 import { useEffect } from "react";
 import Toast from "react-native-toast-message";
-import { useSocket } from "./SocketContext";
-import { useUserData } from "./UserDataContext";
 
 export const useNotifications = () => {
 	const { socket } = useSocket();
@@ -41,5 +41,5 @@ export const useNotifications = () => {
 		return () => {
 			socket.off("notify_waiting", onNotifyWaiting);
 		};
-	}, [socket, params.otherUserId]);
+	}, [socket, params.otherUserId, myId, userData?.contacts]);
 };

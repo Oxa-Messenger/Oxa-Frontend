@@ -6,7 +6,7 @@ import { useUserData } from "@/hooks/UserDataContext";
 import { Ionicons } from "@expo/vector-icons";
 import axios from "axios";
 import { Stack, useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
 	ActivityIndicator,
 	FlatList,
@@ -25,9 +25,8 @@ type Contact = {
 	user?: string;
 	alias?: string;
 };
-type Contacts = Array<Contact>;
+type Contacts = Contact[];
 
-// Improved Menu Item with better touch feedback
 function MenuItem({ label, icon, onPress, color = Colors.text }: any) {
 	return (
 		<TouchableOpacity style={styles.menuItem} onPress={onPress}>
@@ -43,7 +42,7 @@ export default function HomeScreen() {
 	const [loading, setLoading] = useState(false);
 	const { userData, setUserData } = useUserData();
 	const [contacts, setContacts] = useState<Contacts | []>([]);
-	const { initSocket, onlineUsers, iceServers, setIceServers } = useSocket();
+	const { initSocket, onlineUsers, setIceServers } = useSocket();
 
 	const [selectedContact, setSelectedContact] = useState<Contact | null>(
 		null
@@ -51,20 +50,11 @@ export default function HomeScreen() {
 	const [contactMenuVisible, setContactMenuVisible] = useState(false);
 	const [addModalVisible, setAddModalVisible] = useState(false);
 	const [contactIdentifier, setContactIdentifier] = useState("");
-	const [adding, setAdding] = useState(false);
 	const [aliasModalVisible, setAliasModalVisible] = useState(false);
 	const [aliasInput, setAliasInput] = useState("");
 	const [searchQuery, setSearchQuery] = useState("");
 
-	useEffect(() => {
-		if (token === null) return;
-		setLoading(true);
-		fetchUserData();
-		fetchIceConfig();
-		setLoading(false);
-	}, [token]);
-
-	const fetchUserData = async () => {
+	const fetchUserData = useCallback(async () => {
 		try {
 			const res = await axios.get(
 				`${BASE_URL}${API_ENDPOINTS.USER_HOME}`,
@@ -73,36 +63,22 @@ export default function HomeScreen() {
 				}
 			);
 			setUserData(res.data.message);
-			setContacts(res.data.message.contacts || []);
+			setContacts(res.data.message.contacts);
 		} catch (error: any) {
-			if (error?.response?.status === 401) {
+			if (error?.response?.status === 401)
 				console.error("Unauthorized access - invalid token:", error);
-				await logout();
-				console.log("Token invalid or expired, logging out user.");
-				return Toast.show({
-					type: "error",
-					text1: "Session Expired",
-					text2: "Please log in again",
-					position: "top",
-				});
-			}
-			if (error?.response?.status === 404) {
-				console.error("User not found:", error);
-				await logout();
-				return Toast.show({
-					type: error,
-					text1: "User not found",
-					text2: "Please log in again",
-					position: "top",
-				});
-			}
+			else console.error("Failed to fetch user data:", error);
 			await logout();
-			console.error("Failed to fetch user data:", error);
-			Toast.show({ type: "error", text1: "Failed to fetch user data" });
+			return Toast.show({
+				type: "error",
+				text1: "Session Expired",
+				text2: "Please log in again",
+				position: "top",
+			});
 		}
-	};
+	}, [logout, setUserData, token]);
 
-	const fetchIceConfig = async () => {
+	const fetchIceConfig = useCallback(async () => {
 		try {
 			const res = await axios.get(
 				`${BASE_URL}${API_ENDPOINTS.ICE_SERVERS}`,
@@ -111,16 +87,19 @@ export default function HomeScreen() {
 				}
 			);
 			setIceServers(res.data);
-		} catch (error) {
+		} catch (error: any) {
 			console.error("Failed to fetch ICE servers", error);
-			return Toast.show({
-				type: "error",
-				text1: "Failed to fetch communication servers",
-				text2: "Kindly restart the app or login again",
-				position: "top",
-			});
+			await logout();
 		}
-	};
+	}, [setIceServers, token, logout]);
+
+	useEffect(() => {
+		if (token === null) return;
+		setLoading(true);
+		fetchUserData();
+		fetchIceConfig();
+		setLoading(false);
+	}, [token, fetchUserData, fetchIceConfig]);
 
 	useEffect(() => {
 		if (userData?.userId) {
@@ -129,7 +108,7 @@ export default function HomeScreen() {
 				token: token ?? undefined,
 			});
 		}
-	}, [userData]);
+	}, [token, initSocket, userData, fetchIceConfig, fetchUserData]);
 
 	const renderContactItem = ({ item }: { item: Contact }) => {
 		const isOnline = onlineUsers.has(item.user ?? "");
@@ -158,10 +137,7 @@ export default function HomeScreen() {
 		return (
 			<TouchableOpacity
 				onPress={() => handlePress()}
-				onLongPress={() => {
-					setSelectedContact(item);
-					setContactMenuVisible(true);
-				}}
+				onLongPress={() => handleLongPress()}
 				style={styles.contactCard}
 				testID="contactCard"
 			>
@@ -192,8 +168,6 @@ export default function HomeScreen() {
 		}
 
 		try {
-			setAdding(true);
-
 			const res = await axios.post(
 				`${BASE_URL}${API_ENDPOINTS.ADD_CONTACT}`,
 				{ identifier },
@@ -264,8 +238,6 @@ export default function HomeScreen() {
 				text1: "Failed to add contact",
 				position: "top",
 			});
-		} finally {
-			setAdding(false);
 		}
 	};
 
@@ -282,7 +254,7 @@ export default function HomeScreen() {
 			await axios.put(
 				`${BASE_URL}${API_ENDPOINTS.UPDATE_CONTACT_ALIAS}`,
 				{
-					user: selectedContact?.user,
+					user: selectedContact.user,
 					alias: aliasInput.trim(),
 				},
 				{
