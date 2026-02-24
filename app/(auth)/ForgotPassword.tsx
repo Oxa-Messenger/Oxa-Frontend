@@ -1,97 +1,51 @@
-import { Colors } from "@/constants/Colors";
-import { API_ENDPOINTS, BASE_URL } from "@/constants/Endpoints";
-import axios from "axios";
-import { useRouter } from "expo-router";
-import { useState } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { AuthLayout } from "@/components/auth/AuthLayout";
 import {
-	ActivityIndicator,
-	StyleSheet,
-	Text,
-	TextInput,
-	TouchableOpacity,
-	View,
-} from "react-native";
-import Toast from "react-native-toast-message";
+	ErrorMessage,
+	FormInput,
+	SubmitButton,
+} from "@/components/auth/AuthUI";
+import { Colors } from "@/constants/Colors";
+import { useAuth } from "@/hooks/useAuth";
+import { useAuthSubmit } from "@/hooks/useAuthSubmit";
+import { useRouter } from "expo-router";
+import { memo, useCallback } from "react";
+import { useForm } from "react-hook-form";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
-export default function ForgotPasswordScreen() {
+const ForgotPasswordForm = memo(() => {
+	const { forgotPassword } = useAuth();
 	const router = useRouter();
-	const [loading, setLoading] = useState(false);
-
-	type ForgotPasswordFormData = {
-		email: string;
-	};
 
 	const {
 		control,
 		handleSubmit,
 		formState: { errors },
-	} = useForm<ForgotPasswordFormData>();
+	} = useForm({
+		mode: "onTouched",
+		defaultValues: { email: "" },
+	});
 
-	const prepareNextScreen = (path: string) => {
-		setLoading(true);
-		try {
-			router.replace(path as any);
-		} catch (error) {
-			console.error("Navigation error:", error);
-			Toast.show({
-				type: "error",
-				text1: "Navigation Error",
-				position: "top",
-			});
-		} finally {
-			setLoading(false);
-		}
-	};
-
-	const handleSendCode = async (data: ForgotPasswordFormData) => {
-		setLoading(true);
-		try {
-			const res = await axios.post(
-				`${BASE_URL}${API_ENDPOINTS.FORGOT_PASSWORD}`,
-				{ email: data.email },
-				{
-					headers: {
-						"Content-Type": "application/json",
-					},
-				}
-			);
-
+	const handleSuccess = useCallback(
+		(data: { email: string }) => {
 			router.replace({
-				pathname: "./EnterPin",
+				pathname: "/EnterPin",
 				params: { email: data.email },
 			});
-		} catch (err: any) {
-			if (err.response?.status === 404) {
-				console.error("Email not found");
-				Toast.show({
-					type: "error",
-					text1: "Email not found",
-					text2: "Please check your email and try again",
-					position: "top",
-				});
-				return;
-			}
+		},
+		[router]
+	);
 
-			console.error("Forgot password error details:", err);
-			Toast.show({
-				type: "error",
-				text1: "Server Error",
-				text2: "Try again in a few minutes",
-				position: "top",
-			});
-		} finally {
-			setLoading(false);
-		}
-	};
+	const { loading, serverError, submitHandler } = useAuthSubmit(
+		forgotPassword,
+		handleSuccess
+	);
 
 	return (
-		<View style={styles.container}>
-			<Text style={styles.label}>Enter your email</Text>
-
-			<Controller
+		<View>
+			<FormInput
 				control={control}
 				name="email"
+				placeholder="name@example.com"
 				rules={{
 					required: "Email is required",
 					pattern: {
@@ -99,98 +53,51 @@ export default function ForgotPasswordScreen() {
 						message: "Invalid email",
 					},
 				}}
-				render={({ field: { onChange, onBlur, value } }) => (
-					<TextInput
-						style={styles.input}
-						placeholder="name@example.com"
-						placeholderTextColor={Colors.placeHolder}
-						value={value}
-						onChangeText={onChange}
-						onBlur={onBlur}
-						returnKeyType="next"
-						onSubmitEditing={handleSubmit(handleSendCode)}
-						autoCapitalize="none"
-						testID="emailInput"
-					/>
-				)}
+				keyboardType="email-address"
+				onSubmitEditing={handleSubmit(submitHandler)}
+				returnKeyType="go"
+				autoCapitalize="none"
+				autoComplete="email"
+				testID="emailInput"
 			/>
-			{typeof errors.email?.message === "string" && (
-				<Text style={styles.error}>{errors.email.message}</Text>
-			)}
+			<ErrorMessage message={errors.email?.message as string} />
 
-			{loading ? (
-				<ActivityIndicator color={Colors.icon} />
-			) : (
-				<TouchableOpacity
-					onPress={handleSubmit(handleSendCode)}
-					style={styles.button}
-					testID="getResetCodeButton"
-				>
-					<Text style={styles.buttonText}>Get Reset Code</Text>
-				</TouchableOpacity>
-			)}
+			<ErrorMessage message={serverError || ""} isServer />
 
-			<TouchableOpacity onPress={() => prepareNextScreen("./Login")}>
+			<SubmitButton
+				loading={loading}
+				onPress={handleSubmit(submitHandler)}
+				title="Get Reset Code"
+				testID="getResetCodeButton"
+			/>
+		</View>
+	);
+});
+ForgotPasswordForm.displayName = "ForgotPasswordForm";
+
+export default function ForgotPasswordScreen() {
+	const router = useRouter();
+	const goToLogin = useCallback(() => router.replace("/Login"), [router]);
+
+	return (
+		<AuthLayout title="Forgot Password">
+			<ForgotPasswordForm />
+
+			<Pressable onPress={goToLogin}>
 				<Text style={styles.rememberedText}>
 					Remember your password? Log in
 				</Text>
-			</TouchableOpacity>
-		</View>
+			</Pressable>
+		</AuthLayout>
 	);
 }
 
 const styles = StyleSheet.create({
-	container: {
-		flex: 1,
-		backgroundColor: Colors.background,
-		padding: 24,
-		justifyContent: "center",
-	},
-
-	label: {
-		color: Colors.text,
-		fontSize: 18,
-		marginBottom: 12,
-		fontWeight: "600",
-	},
-
-	input: {
-		backgroundColor: "#1d1f20",
-		color: Colors.text,
-		borderRadius: 10,
-		padding: 14,
-		fontSize: 16,
-		borderColor: "#2a2d2f",
-		borderWidth: 1,
-		marginBottom: 20,
-	},
-
-	button: {
-		backgroundColor: Colors.tint,
-		paddingVertical: 14,
-		borderRadius: 10,
-		alignItems: "center",
-		marginTop: 10,
-	},
-
-	buttonText: {
-		color: Colors.text,
-		fontWeight: "bold",
-		fontSize: 16,
-		letterSpacing: 1,
-	},
-
 	rememberedText: {
 		color: Colors.icon,
 		textAlign: "center",
 		marginTop: 24,
 		textDecorationLine: "underline",
 		fontSize: 14,
-	},
-
-	error: {
-		color: Colors.error,
-		marginBottom: 12,
-		fontSize: 13,
 	},
 });

@@ -1,4 +1,5 @@
 import { API_ENDPOINTS, BASE_URL } from "@/constants/Endpoints";
+import apiClient from "@/services/api";
 import {
 	getToken,
 	removeToken,
@@ -8,23 +9,38 @@ import axios from "axios";
 import React, {
 	createContext,
 	ReactNode,
+	useCallback,
 	useContext,
 	useEffect,
+	useMemo,
 	useState,
 } from "react";
 
 interface AuthContextProps {
 	token: string | null;
 	loading: boolean;
-	login: (username: string, password: string) => Promise<boolean>;
-	logout: () => void;
+	signup: (data: {
+		email: string;
+		password: string;
+		username?: string;
+	}) => Promise<void>;
+	login: (data: { identifier: string; password: string }) => Promise<void>;
+	logout: () => Promise<void>;
+	forgotPassword: (data: { email: string }) => Promise<void>;
+	resetPassword: (data: {
+		resetPin: string;
+		password: string;
+	}) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextProps>({
 	token: null,
 	loading: true,
-	login: async () => false,
-	logout: async () => false,
+	signup: async () => {},
+	login: async () => {},
+	logout: async () => {},
+	forgotPassword: async () => {},
+	resetPassword: async () => {},
 });
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
@@ -33,67 +49,92 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
 	useEffect(() => {
 		const loadUser = async () => {
-			try {
-				const stored = await getToken();
+			const stored = await getToken();
 
-				if (stored) {
-					setToken(stored);
-				} else {
-					setToken(null);
-				}
-			} catch (error) {
-				console.error("Failed to load user", error);
+			if (stored) {
+				setToken(stored);
+			} else {
 				setToken(null);
-			} finally {
-				setLoading(false);
 			}
+			setLoading(false);
 		};
 
 		loadUser();
 	}, []);
 
-	const login = async (identifier: string, password: string) => {
-		try {
-			const res = await axios.post(
-				`${BASE_URL}${API_ENDPOINTS.LOGIN}`,
-				{ identifier, password },
-				{
-					headers: {
-						"Content-Type": "application/json",
-					},
-				}
-			);
-			const token = res.data.token;
-			await saveToken(token);
-			setToken(token);
-			return true;
-		} catch (error) {
-			throw error;
-		}
-	};
+	const signup = useCallback(
+		async (data: {
+			email: string;
+			password: string;
+			username?: string | null;
+		}) => {
+			const { username, ...rest } = data;
+			const payload =
+				username && username.trim() !== "" ? { ...data } : rest;
 
-	const logout = async () => {
+			await axios.post(`${BASE_URL}${API_ENDPOINTS.REGISTER}`, payload, {
+				headers: { "Content-Type": "application/json" },
+			});
+		},
+		[]
+	);
+
+	const login = useCallback(
+		async (data: { identifier: string; password: string }) => {
+			setLoading(true);
+
+			const res = await apiClient.post(API_ENDPOINTS.LOGIN, data);
+
+			setToken(res.data.token);
+			await saveToken(res.data.token);
+			setLoading(false);
+		},
+		[]
+	);
+
+	const logout = useCallback(async () => {
+		setLoading(true);
+
 		try {
-			await removeToken();
-			const res = await axios.post(
-				`${BASE_URL}${API_ENDPOINTS.LOGOUT}`,
-				{},
-				{
-					headers: {
-						"Content-Type": "application/json",
-						Authorization: `Bearer ${token}`,
-					},
-				}
-			);
-			setToken(null);
+			await apiClient.post(API_ENDPOINTS.LOGOUT);
 		} catch (error) {
-			setToken(null);
-			throw error;
+			console.error("Logout error: ", error);
 		}
-	};
+
+		setToken(null);
+		await removeToken();
+		setLoading(false);
+	}, []);
+
+	const forgotPassword = useCallback(async (data: { email: string }) => {
+		await axios.post(`${BASE_URL}${API_ENDPOINTS.FORGOT_PASSWORD}`, data);
+	}, []);
+
+	const resetPassword = useCallback(
+		async (data: { resetPin: string; password: string }) => {
+			await axios.post(
+				`${BASE_URL}${API_ENDPOINTS.RESET_PASSWORD}`,
+				data
+			);
+		},
+		[]
+	);
+
+	const contextValue = useMemo(
+		() => ({
+			token,
+			loading,
+			signup,
+			login,
+			logout,
+			forgotPassword,
+			resetPassword,
+		}),
+		[token, loading, signup, login, logout, forgotPassword, resetPassword]
+	);
 
 	return (
-		<AuthContext.Provider value={{ token, loading, login, logout }}>
+		<AuthContext.Provider value={contextValue}>
 			{children}
 		</AuthContext.Provider>
 	);

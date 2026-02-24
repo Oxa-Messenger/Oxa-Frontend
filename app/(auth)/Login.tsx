@@ -1,213 +1,119 @@
+import { AuthLayout } from "@/components/auth/AuthLayout";
+import {
+	ErrorMessage,
+	FormInput,
+	SubmitButton,
+} from "@/components/auth/AuthUI";
 import { Colors } from "@/constants/Colors";
 import { useAuth } from "@/hooks/useAuth";
+import { useAuthSubmit } from "@/hooks/useAuthSubmit";
 import { useRouter } from "expo-router";
-import { useRef, useState } from "react";
-import { Controller, useForm } from "react-hook-form";
-import {
-	ActivityIndicator,
-	StyleSheet,
-	Text,
-	TextInput,
-	TouchableOpacity,
-	View,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import Toast from "react-native-toast-message";
+import React, { memo, useCallback, useRef } from "react";
+import { useForm } from "react-hook-form";
+import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
-export default function Login() {
-	const router = useRouter();
-	const [loading, setLoading] = useState(false);
+const LoginFormFields = memo(() => {
 	const { login } = useAuth();
-	const passwordRef = useRef<TextInput>(null);
 
-	type LoginFormData = {
-		identifier: string;
-		password: string;
-	};
+	const passwordRef = useRef<TextInput>(null);
 
 	const {
 		control,
 		handleSubmit,
 		formState: { errors },
-	} = useForm<LoginFormData>();
+	} = useForm({
+		mode: "onTouched",
+		defaultValues: { identifier: "", password: "" },
+	});
 
-	const prepareNextScreen = (path: string) => {
-		setLoading(true);
-		try {
-			router.replace(path as any);
-		} catch (error) {
-			console.error("Navigation error:", error);
-			Toast.show({
-				type: "error",
-				text1: "Navigation Error",
-				position: "top",
-			});
-		} finally {
-			setLoading(false);
-		}
-	};
-
-	const onSubmit = async (data: LoginFormData) => {
-		setLoading(true);
-		try {
-			await login(data.identifier, data.password);
-			router.replace("/(MainApp)/Home");
-		} catch (err: any) {
-			if (err.response.status === 400) {
-				console.error(
-					"Login failed: Incorrect username/email or password"
-				);
-				Toast.show({
-					type: "error",
-					text1: "Login Failed",
-					text2: "Incorrect username/email or password",
-				});
-				return;
-			}
-
-			console.error("Login error details:", err);
-			Toast.show({
-				type: "error",
-				text1: "Server Error",
-				text2: "Something went wrong!",
-			});
-		} finally {
-			setLoading(false);
-		}
-	};
+	const { loading, serverError, submitHandler } = useAuthSubmit(login);
 
 	return (
-		<SafeAreaView style={styles.container}>
-			<Text style={styles.title}>Login</Text>
-
-			<Controller
+		<View>
+			<FormInput
 				control={control}
 				name="identifier"
+				placeholder="Email or Username"
 				rules={{ required: "Email or username is required" }}
-				render={({ field: { onChange, onBlur, value } }) => (
-					<TextInput
-						style={styles.input}
-						placeholder="Email or Username"
-						placeholderTextColor={Colors.placeHolder}
-						value={value}
-						onChangeText={onChange}
-						onBlur={onBlur}
-						returnKeyType="next"
-						onSubmitEditing={() => passwordRef.current?.focus()}
-						autoCapitalize="none"
-						testID="identifierInput"
-					/>
-				)}
+				keyboardType="email-address"
+				onSubmitEditing={() => passwordRef.current?.focus()}
+				returnKeyType="next"
+				autoCapitalize="none"
+				autoComplete="username"
+				testID="identifierInput"
 			/>
-			{errors.identifier && (
-				<Text style={styles.error}>{errors.identifier.message}</Text>
-			)}
+			<ErrorMessage message={errors.identifier?.message} />
 
-			<Controller
+			<FormInput
 				control={control}
 				name="password"
+				placeholder="Password"
+				secureTextEntry
 				rules={{
 					required: "Password is required",
 					minLength: {
 						value: 8,
-						message: "Password must be at least 8 characters",
+						message: "Must be at least 8 characters",
+					},
+					pattern: {
+						value: /^[\x20-\x7E]+$/,
+						message:
+							"Only Numbers and Alphabets and special characters allowed",
 					},
 				}}
-				render={({ field: { onChange, onBlur, value } }) => (
-					<TextInput
-						ref={passwordRef}
-						style={styles.input}
-						placeholder="Password"
-						placeholderTextColor={Colors.placeHolder}
-						value={value}
-						onChangeText={onChange}
-						onBlur={onBlur}
-						secureTextEntry
-						returnKeyType="done"
-						onSubmitEditing={handleSubmit(onSubmit)}
-						autoCapitalize="none"
-						testID="passwordInput"
-					/>
-				)}
+				ref={passwordRef}
+				onSubmitEditing={handleSubmit(submitHandler)}
+				returnKeyType="go"
+				autoCapitalize="none"
+				autoComplete="current-password"
+				testID="passwordInput"
 			/>
-			{errors.password && (
-				<Text style={styles.error}>{errors.password.message}</Text>
-			)}
+			<ErrorMessage message={errors.password?.message} />
 
-			{loading ? (
-				<ActivityIndicator color={Colors.icon} />
-			) : (
-				<TouchableOpacity
-					onPress={handleSubmit(onSubmit)}
-					style={styles.button}
-					testID="loginButton"
-				>
-					<Text style={styles.buttonText}>Login</Text>
-				</TouchableOpacity>
-			)}
+			<ErrorMessage message={serverError || ""} isServer />
 
-			<TouchableOpacity
-				onPress={() => prepareNextScreen("/(auth)/ForgotPassword")}
-				style={styles.secondaryBtn}
-			>
-				<Text style={styles.secondaryBtnText}>Forgot Password?</Text>
-			</TouchableOpacity>
+			<SubmitButton
+				loading={loading}
+				onPress={handleSubmit(submitHandler)}
+				title="Login"
+				testID="loginButton"
+			/>
+		</View>
+	);
+});
+LoginFormFields.displayName = "LoginFormFields";
+
+export default function Login() {
+	const router = useRouter();
+
+	const goToForgotPassword = useCallback(
+		() => router.replace("/ForgotPassword"),
+		[router]
+	);
+
+	const goToSignup = useCallback(() => router.replace("/Signup"), [router]);
+
+	return (
+		<AuthLayout title="Login">
+			<LoginFormFields />
 
 			<View style={styles.footer}>
-				<Text style={styles.text}>Don't have an account?</Text>
-				<TouchableOpacity
-					onPress={() => prepareNextScreen("/(auth)/Signup")}
-				>
-					<Text style={styles.link}> Signup</Text>
-				</TouchableOpacity>
+				<Pressable onPress={goToForgotPassword}>
+					<Text style={styles.text}>Forgot Password?</Text>
+				</Pressable>
 			</View>
-		</SafeAreaView>
+
+			<View style={styles.footer}>
+				<Text style={styles.text}>Don&apos;t have an account?</Text>
+				<Pressable onPress={goToSignup}>
+					<Text style={styles.link}> Signup</Text>
+				</Pressable>
+			</View>
+		</AuthLayout>
 	);
 }
 
 const styles = StyleSheet.create({
-	container: {
-		flex: 1,
-		padding: 24,
-		justifyContent: "center",
-		backgroundColor: Colors.background,
-	},
-	title: {
-		fontSize: 22,
-		fontWeight: "bold",
-		textAlign: "center",
-		marginBottom: 32,
-		color: Colors.text,
-	},
-	input: {
-		borderBottomWidth: 1,
-		borderBottomColor: "grey",
-		padding: 12,
-		marginBottom: 16,
-		fontSize: 16,
-		color: Colors.text,
-	},
-	button: {
-		backgroundColor: Colors.tint,
-		paddingVertical: 14,
-		borderRadius: 10,
-		alignItems: "center",
-		marginTop: 8,
-	},
-	buttonText: {
-		color: "#fff",
-		fontSize: 16,
-		fontWeight: "bold",
-	},
-	secondaryBtn: {
-		marginTop: 16,
-		alignItems: "center",
-	},
-	secondaryBtnText: {
-		color: Colors.icon,
-		textDecorationLine: "underline",
-		fontSize: 14,
-	},
 	footer: {
 		flexDirection: "row",
 		justifyContent: "center",
@@ -218,14 +124,9 @@ const styles = StyleSheet.create({
 		fontSize: 14,
 	},
 	link: {
-		color: "#4A90E5",
+		color: Colors.link,
 		fontWeight: "bold",
 		marginLeft: 5,
 		textDecorationLine: "underline",
-	},
-	error: {
-		color: Colors.error,
-		fontSize: 13,
-		marginBottom: 8,
 	},
 });
