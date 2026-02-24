@@ -1,95 +1,99 @@
 {
-  "expo": {
-    "name": "Oxa",
-    "slug": "oxa",
-    "version": "1.1.0",
-    "runtimeVersion": "1.1.0",
-    "description": "A lightweight, fast, and secure mobile app built with React Native, optimized for performance and smooth user experience.",
-    "platforms": [
-      "ios",
-      "android"
-    ],
-    "backgroundColor": "#000000",
-    "jsEngine": "hermes",
-    "orientation": "portrait",
-    "icon": "./assets/images/adaptive-icon.png",
-    "scheme": "oxa",
-    "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
-    "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "com.OxaMessenger.Oxa",
-      "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
-      }
-    },
-    "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#000000"
-      },
-      "edgeToEdgeEnabled": false,
-      "package": "com.OxaMessenger.Oxa",
-      "permissions": [
-        "android.permission.CAMERA",
-        "android.permission.RECORD_AUDIO",
-        "android.permission.MODIFY_AUDIO_SETTINGS",
-        "android.permission.INTERNET",
-        "android.permission.ACCESS_NETWORK_STATE",
-        "android.permission.WAKE_LOCK",
-        "android.permission.FOREGROUND_SERVICE",
-        "android.permission.FOREGROUND_SERVICE_MICROPHONE",
-        "android.permission.FOREGROUND_SERVICE_CAMERA"
-      ]
-    },
-    "plugins": [
-      "./withAndroidSplits",
-      "expo-router",
-      [
-        "expo-splash-screen",
-        {
-          "image": "./assets/images/adaptive-icon.png",
-          "imageWidth": 200,
-          "resizeMode": "contain",
-          "backgroundColor": "#000000"
-        }
-      ],
-      "expo-secure-store",
-      "expo-font",
-      [
-        "expo-build-properties",
-        {
-          "android": {
-            "minSdkVersion": 29,
-            "compileSdkVersion": 35,
-            "targetSdkVersion": 35,
-            "enableProguardInReleaseBuilds": true,
-            "enableShrinkResourcesInReleaseBuilds": true,
-            "enableMinifyInReleaseBuilds": true
-          }
-        }
-      ],
-      [
-        "expo-camera",
-        {
-          "cameraPermissions": "Allow Oxa to access your camera",
-          "microphonePermissions": "Allow Oxa to access your microphone",
-          "recordAudioAndroid": true
-        }
-      ]
-    ],
-    "experiments": {
-      "typedRoutes": true
-    },
-    "extra": {
-      "router": {},
-      "eas": {
-        "projectId": "c69dad84-1bc4-46ac-8566-5299d9fd1086"
-      }
-    },
-    "owner": "oxa-messenger",
-    "updates": {
-      "url": "https://u.expo.dev/b941b228-60d3-4379-88d9-f041a8505a81"
-    }
-  }
+	"expo": {
+		"name": "Oxa",
+		"slug": "oxa",
+		"version": "1.2.0",
+		"runtimeVersion": "1.2.0",
+		"description": "A lightweight, fast, and secure mobile app built with React Native, optimized for performance and smooth user experience.",
+		"platforms": ["ios", "android"],
+		"backgroundColor": "#000000",
+		"jsEngine": "hermes",
+		"orientation": "portrait",
+		"icon": "./assets/images/adaptive-icon.png",
+		"scheme": "oxa",
+		"userInterfaceStyle": "automatic",
+		"newArchEnabled": true,
+		"ios": {
+			"supportsTablet": true,
+			"bundleIdentifier": "com.OxaMessenger.Oxa",
+			"infoPlist": {
+				"ITSAppUsesNonExemptEncryption": false
+			}
+		},
+		"android": {
+			"adaptiveIcon": {
+				"foregroundImage": "./assets/images/adaptive-icon.png",
+				"backgroundColor": "#000000"
+			},
+			"edgeToEdgeEnabled": true,
+			"package": "com.OxaMessenger.Oxa",
+			"permissions": [
+				"android.permission.CAMERA",
+				"android.permission.RECORD_AUDIO",
+				"android.permission.MODIFY_AUDIO_SETTINGS",
+				"android.permission.INTERNET",
+				"android.permission.ACCESS_NETWORK_STATE",
+				"android.permission.WAKE_LOCK",
+				"android.permission.FOREGROUND_SERVICE",
+				"android.permission.FOREGROUND_SERVICE_MICROPHONE",
+				"android.permission.FOREGROUND_SERVICE_CAMERA"
+			]
+		},
+		"plugins": [
+			"./withAndroidSplits",
+			"expo-router",
+			[
+				"@config-plugins/react-native-webrtc",
+				{
+					"cameraPermission": "Allow Oxa to access your camera",
+					"microphonePermission": "Allow Oxa to access your microphone"
+				}
+			],
+			[
+				"expo-splash-screen",
+				{
+					"image": "./assets/images/adaptive-icon.png",
+					"imageWidth": 200,
+					"resizeMode": "contain",
+					"backgroundColor": "#000000"
+				}
+			],
+			"expo-secure-store",
+			"expo-font",
+			[
+				"expo-build-properties",
+				{
+					"android": {
+						"minSdkVersion": 29,
+						"compileSdkVersion": 35,
+						"targetSdkVersion": 35,
+						"enableProguardInReleaseBuilds": true,
+						"enableShrinkResourcesInReleaseBuilds": true,
+						"enableMinifyInReleaseBuilds": true
+					}
+				}
+			],
+			[
+				"expo-camera",
+				{
+					"cameraPermissions": "Allow Oxa to access your camera",
+					"microphonePermissions": "Allow Oxa to access your microphone",
+					"recordAudioAndroid": true
+				}
+			]
+		],
+		"experiments": {
+			"typedRoutes": true
+		},
+		"extra": {
+			"router": {},
+			"eas": {
+				"projectId": "c69dad84-1bc4-46ac-8566-5299d9fd1086"
+			}
+		},
+		"owner": "oxa-messenger",
+		"updates": {
+			"url": "https://u.expo.dev/b941b228-60d3-4379-88d9-f041a8505a81"
+		}
+	}
 }
