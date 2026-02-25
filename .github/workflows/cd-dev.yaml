@@ -9,7 +9,32 @@ permissions:
   contents: write # Required for creating GitHub Releases
 
 jobs:
+  check_version:
+    runs-on: ubuntu-latest
+    outputs:
+      version_changed: ${{ steps.check.outputs.changed }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2 # Necessary to compare with the previous commit
+
+      - name: Check runtimeVersion change
+        id: check
+        run: |
+          # Extract current and previous versions
+          CURRENT_VER=$(jq -r '.expo.runtimeVersion' app.json)
+          PREVIOUS_VER=$(git show HEAD^:app.json | jq -r '.expo.runtimeVersion')
+
+          echo "Current: $CURRENT_VER, Previous: $PREVIOUS_VER"
+
+          if [ "$CURRENT_VER" != "$PREVIOUS_VER" ]; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+          fi
+
   development-ship:
+    needs: check_version
     name: Update & Build Preview
     runs-on: ubuntu-latest
     environment: development
@@ -36,10 +61,12 @@ jobs:
 
       # 1. SHIP OTA UPDATE (Instant update for existing users)
       - name: ☁️ Publish OTA Update
+        if: needs.check_version.outputs.version_changed == 'false'
         run: eas update --branch development --message "${{ github.event.head_commit.message }}"
 
       # 2. BUILD ANDROID (Wait and Download)
       - name: 🤖 Build Android (APK)
+        if: needs.check_version.outputs.version_changed == 'true'
         id: android_build
         run: |
           # Run build and save metadata to JSON
@@ -53,6 +80,7 @@ jobs:
 
       # 3. BUILD IOS (Wait and Download)
       #- name: 🍎 Build iOS (IPA)
+      #  if: needs.check_version.outputs.version_changed == 'true'
       #  id: ios_build
       #  run: |
       #    # Run build and save metadata to JSON
@@ -66,6 +94,7 @@ jobs:
 
       # 4. CREATE GITHUB RELEASE
       - name: 📝 Create GitHub Release
+        if: needs.check_version.outputs.version_changed == 'true'
         uses: softprops/action-gh-release@v1
         with:
           tag_name: v${{ github.run_number }}
