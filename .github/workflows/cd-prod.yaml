@@ -16,14 +16,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 2 # Necessary to compare with the previous commit
+          fetch-depth: 0 # Necessary to compare with the previous commit
 
       - name: Check runtimeVersion change
         id: check
         run: |
+          # The commit BEFORE the push started
+          BEFORE_SHA=${{ github.event.before }}
+
           # Extract current and previous versions
           CURRENT_VER=$(jq -r '.expo.runtimeVersion' app.json)
-          PREVIOUS_VER=$(git show HEAD^:app.json | jq -r '.expo.runtimeVersion')
+          PREVIOUS_VER=$(git show $BEFORE_SHA:app.json | jq -r '.expo.runtimeVersion')
 
           echo "Current: $CURRENT_VER, Previous: $PREVIOUS_VER"
 
